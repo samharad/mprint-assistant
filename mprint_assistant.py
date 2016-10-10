@@ -78,7 +78,6 @@ def getBuilding(session):
 
 def getFloors(session, buildingId):
 	floors = session.get(userBase + 'floors', params={'buildingId':buildingId})
-	# TODO format in columns
 	colWidth = max(len(i["level"]) for i in floors.json()["result"]) + len("[]") + 2
 	for i in floors.json()["result"]:
 		print ("[" + i["level"] + "]").ljust(colWidth) + i["name"]
@@ -163,27 +162,3 @@ if __name__ == "__main__":
     main()
 
 
-
-# with open('/tmp/cookies.txt', 'r') as cookies:
-# 	cooks = cookies.read().replace('\t', '\n')
-
-# print cooks
-# cooksList = cooks.split('\n')
-# print cooksList
-
-
-# buildings = getBuildings()
-# buildings_result = json.dumps(json.loads(buildings.text))
-# print buildings_result
-
-# building = raw_input('Enter building: ')
-# #buildingId = buildings["result"]
-# buildingId = (item for item in buildings.json()["result"] if item["name"].lower() == building.lower()).next()["id"]
-# print buildingId
-
-# base = 'https://mprint.umich.edu/api/queues/?all'
-
-# queues = requests.get(base, cookies={'cosign':cooksList[-1]})
-# print queues.text
-# #queues_result = json.dumps(json.loads(queues.text))
-# #print queues_result
