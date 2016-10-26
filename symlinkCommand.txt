@@ -1,0 +1,1 @@
+ln -s /Users/adamsam/Desktop/mprint_project/mprint_assistant.py /usr/local/bin/mprint_assistant.py
