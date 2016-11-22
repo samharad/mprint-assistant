@@ -1,142 +1,119 @@
-import requests
-from settings import webloginBaseURL, userBaseURL, guestBaseURL
-import requests
-import json
-from getpass import getpass
+from settings import webloginBaseURL, userBaseURL, guestBaseURL  # Base URLs
+import requests # Request library for interacting with API
+from getpass import getpass # Allows password entry
+from Document import Document
 from fuzzywuzzy import fuzz
+from utils import getSelectionFromListOfDicts
+
 import sys
+import json
+import os
 
-import rlcompleter
-import readline
-readline.parse_and_bind("tab: complete")
+class PrintSession:
+  
+  # A printSession has a requestsSession for communicating with API
+  session = requests.Session()
 
-class PrintSessionClass(requests.Session):
+  # A print session has a building menu 
+  buildings = None
+  # A print session has a floors menu (populated after building selection)
+  floors = None
+  # A print session has a queues menu (populated after floor selection)
+  queues = None
 
-  sysArgs = None
-  buildingId = None
-  floorId = None
-  queueName = None
+  # Building obj for user's desired building
+  building = None
+  # Floor obj for user's desired floor; within building 
+  floor = None
+  # Queue obj for user's desired floor
+  queue = None
+
+  # Print session has list of DocumentClass
+  # Each doc has filepath, parameters
   documents = []
 
-  
-  # Initialize PrintSession; calls parent constructor;
-  # initializes sysArgs; authenticates user
-  def __init__(self, argsIn):
-    requests.Session.__init__(self)
-    self.setArgs(argsIn)
-    self.get(webloginBaseURL)
-    self.post(webloginBaseURL, 
-              data={'login':raw_input('Enter username: '), 
-              'password':getpass(prompt='Enter password: ')})
+  # Dictionary; Print session has command line arguments:
+  # building 
+  # noscale
+  # documents ------- list
+  # copies ---------- list
+  # floorId
+  # one
+  # range ------------ list
+  # short
+  # landscape
+  sysArgs = None
 
-  def setArgs(self, argsIn):
-    self.sysArgs = argsIn
+  def __init__(self):
+    # Populates buildings menu
+    responseBuildings = self.session.get(guestBaseURL + 'buildings')
+    if responseBuildings.status_code != 200:
+      sys.exit('Could not retrieve buildings')
+    self.buildings = responseBuildings.json()
 
-  def determineDocs(self):
-    if not self.sysArgs.documents:
-      inputDocs = raw_input('Enter document paths separated by spaces: ')
-      self.documents = inputDocs.split()
-    else:
-      documents = self.sysArgs.focuments
+    # Populates floors menu
+    responseFloors = self.session.get(guestBaseURL + 'floors')
+    if responseFloors.status_code != 200:
+      sys.exit('Could not retrieve floors')
+    self.floors = responseFloors.json()
 
-  def printDocs(self):
-    for i, doc in enumerate(self.documents):
-      file = {'file': open(doc, 'rb')}
-      params = {}
-      if self.sysArgs.landscape:
-        params['orientation'] = 'landscape'
-      if self.sysArgs.range and args.range[i] != 'all':
-        params['range'] = args.range[i]
-      if self.sysArgs.copies:
-        params['copies'] = args.copies[i]
-      if self.sysArgs.one:
-        params['sides'] = 'one-sided'
-      if self.sysArgs.short:
-        params['sides'] = 'two-sided-short-edge'
-      if self.sysArgs.noscale:
-        params['scale'] = 'off'
+  def interpretSysArgs(self):
+    # Sets Document params based no sys args
+    if self.sysArgs['landscape']:
+      Document.params['orientation'] = Document.LANDSCAPE
+    if self.sysArgs['one']:
+      Document.params['sides'] = Document.ONE_SIDED
+    if self.sysArgs['short']:
+      Document.params['sided'] = Document.TWO_SIDED_SHORT
+    if self.sysArgs['noscale']:
+      Document.params['scale'] = False;
+    if self.sysArgs['range']: # TODO ERROR CHECKING
+      Document.params['range'] = self.sysArgs['range']
+    if self.sysArgs['copies']: # TODO error checking
+      Document.params['copies'] = self.sysArgs['copies']
 
-      printStatus = self.post(userBaseURL + 'jobs', files=file, params={'queue':self.queueName}).json()
-      print(printStatus['status'])
+    # Checks that documents exist and appends them to documents 
+    if self.sysArgs['documents']:
+      for pathIn in self.sysArgs['documents']:
+        if not os.path.isfile(pathIn):
+          sys.exit('\'' + pathIn + '\' cannot be found.')
+        self.documents.append(Document(pathIn))
 
+    if self.sysArgs['floorId']:
+      self.floor = filter(lambda dict: dict['id'] == self.sysArgs['floorId'], self.floors['result'])[0]
+      if not self.floor:
+        sys.exit('Could not find specified floor ID.')
+      # TODO should error check this? theoretically fine
+      print(self.floor)
+      buildingId = self.floor['building_id']
+      self.building = filter(lambda dict: dict['id'] == buildingId, self.buildings['result'])[0]
 
-  def determineQueue(self):
-    # should call determine floorId which should call detBuilding if neccessary
-    if not self.sysArgs.floorId:
-      self.buildingId = self.determineBuilding()
-      self.floorId = self.determineFloorId()
-    else:
-      self.floorId = self.sysArgs.floorId
-    queues = self.get(userBaseURL + 'queues', params={'floor':self.floorId}).json()['result']
-    if not len(queues):
-      print("No queues found")
-      sys.exit()
-    else:
-      colWidth0 = max(len(str(i)) for i, entry in enumerate(queues)) + len("[]") + 2
-      colWidth1 = max(len(i["display_name"]) for i in queues) + 2
-      for i, queue in enumerate(queues):
-        print ("[" + str(i) + "]").ljust(colWidth0) + queue["display_name"].ljust(colWidth1) + queue["location"]
-      inputQueueIndex = int(raw_input('Enter queue number: '))
-      self.queueName = queues[inputQueueIndex]['name']
+  def authenticate(self):
+    response = self.session.get(webloginBaseURL)
+    response = self.session.post(webloginBaseURL, 
+                                 data={'login':raw_input('Enter username: '), 
+                                 'password':getpass(prompt='Enter password: ')}, 
+                                 allow_redirects=False)
 
+    # Redirect code means successful login
+    if response.status_code != 302:
+      sys.exit('Invalid credentials.')
 
-  def determineFloorId(self):
-    floors = self.get(userBaseURL + 'floors', params={'buildingId':self.buildingId}).json()['result']
-    for floor in floors:
-      print ("[" + floor['level'] + "]").ljust(5) + floor['name'].ljust(20) + floor['id']
-    inputLevel = raw_input('Enter level: ')
-    for floor in floors:
-      for key, value in floor.iteritems():
-        if value == inputLevel:
-          floorId = floor['id']
-    return floorId
+  def setSysArgs(self, sysArgsIn):
+    self.sysArgs = sysArgsIn
 
   def determineBuilding(self):
-    possibleBuildingIndices = []
-    tryAgain = False
-    buildings = self.getBuildings()['result']
-    while not len(possibleBuildingIndices) or tryAgain:
-      possibleBuildingIndices = []
-      if not self.sysArgs.building or tryAgain:
-        building = raw_input('Enter building: ')
-      else:
-        building = self.sysArgs.building
-      tryAgain = False
-      for i, dictionary in enumerate(buildings):
-        if fuzz.partial_ratio(building.lower(), dictionary['name'].lower()) == 100:
-          possibleBuildingIndices.append(i)
-
-      if len(possibleBuildingIndices) == 1:
-        return buildings[possibleBuildingIndices[0]]['id']
-      elif len(possibleBuildingIndices) > 0:
-        for i, index in enumerate(possibleBuildingIndices):
-          print ("[" + str(i) + "]").ljust(5) + buildings[index]['name']
-        inputIndex = raw_input("Enter building number (or press return to try again): ")
-        if inputIndex == '':
-          tryAgain = True
-        else:
-          inputIndex = int(inputIndex)
-          buildingId = possibleBuildingIndices[inputIndex]
-      else:
-        tryAgain = True
-    return buildings[buildingId]['id']
-
-  def getBuildings(self):
-    buildings = self.get(userBaseURL + 'buildings')
-    if buildings.status_code != 200:
-      raise ApiError('GET /areas/ {}'.format(buildings.stataus_code))
-    buildingsResult = buildings.json()
-    return buildingsResult
+    possibleBuildings = []
+    while not self.building:
+      inputString = raw_input('Enter building name: ')
+      for dictionary in self.buildings['result']:
+        if fuzz.partial_ratio(inputString.lower(), dictionary['name'].lower()) == 100:
+          possibleBuildings.append(dictionary)
+      self.building = getSelectionFromListOfDicts(possibleBuildings, 'name', 'id')
 
 
-
-
-
-
-
-
-
-
-
+  def determineDestination(self):
+    if not self.building:
+      self.determineBuilding();
 
 
