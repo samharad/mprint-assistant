@@ -1,6 +1,23 @@
 import argparse
 import sys
 
+def getSelectionFromListOfDicts(list, *keysToPrint):
+  if not list:
+    return None
+
+  # TODO should calculate neccessary widths; MUST respond to input
+  colWidths = []
+  print("{:<6}".format('Index')),
+  for key in keysToPrint:
+    print("{:40}".format(key.capitalize())),
+  print('')
+  for i, dict in enumerate(list):
+    print("{:<6}".format('[' + str(i) + ']')),
+    for key in keysToPrint:
+      print("{:40}".format(dict[key])),
+    print('')
+  return None
+
 def parse():
   parser = argparse.ArgumentParser()
   parser.add_argument('-d', 
@@ -29,7 +46,7 @@ def parse():
                       nargs=2,
                       action='store',
                       required=False,
-                      help='Print only pages within range; specify as a list pairs of integers with only a \'-\' between them, or \'all\' otherwise')
+                      help='Print only pages within range; specify as comma-separated list of pages/ranges of pages denoted with \'-\'')
   parser.add_argument('-c',
                       '--copies', 
                       nargs='+', 
@@ -55,3 +72,15 @@ def parse():
                       help='Do not scale to page (default is fit to page)')
   args = parser.parse_args()
   return args
+
+
+
+
+
+
+
+
+
+
+
+
