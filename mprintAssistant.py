@@ -1,10 +1,8 @@
 from printSession import PrintSession
-from Document import Document
+from document import Document
 import utils
-# from CommandInterpreterClass import CommandInterpreterClass
 
 def main(): 
-  
   # Create new session
   session = PrintSession()
 
@@ -15,7 +13,11 @@ def main():
   # Authenticate session
   session.authenticate()
 
+  # Determine printer
   session.determineDestination()
+
+  # Determine documents
+  session.determineDocs();
 
 
 
