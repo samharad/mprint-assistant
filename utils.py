@@ -1,22 +1,39 @@
 import argparse
 import sys
 
-def getSelectionFromListOfDicts(list, *keysToPrint):
+# Takes in a list of dictionaries, a prompt, and any number of keys,
+# prints nice columns from the lists along with selection indexes, 
+# prompts user for a selection and then returns that dictionary
+# keysToPrint is a tuple
+def getSelection(list, prompt, *keysToPrint):
   if not list:
     return None
 
-  # TODO should calculate neccessary widths; MUST respond to input
-  colWidths = []
-  print("{:<6}".format('Index')),
+  # Okay, we need to get len(max(values of all dicts ar key)) for ea. key
+  keyMaxLens = {}
   for key in keysToPrint:
-    print("{:40}".format(key.capitalize())),
+    keyMaxLens[key] = len(str(key))
+    for dict in list:
+      if len(str(dict[key])) > keyMaxLens[key]:
+        keyMaxLens[key] = len(str(dict[key]))
+
+  INDEX_WIDTH = 6
+  print("".join('INDEX'.ljust(INDEX_WIDTH))),
+  for key in keysToPrint:
+    print("".join(key.upper().ljust(keyMaxLens[key]+2))),
   print('')
   for i, dict in enumerate(list):
-    print("{:<6}".format('[' + str(i) + ']')),
+    print("".join(('[' + str(i) + ']').ljust(INDEX_WIDTH))),
     for key in keysToPrint:
-      print("{:40}".format(dict[key])),
+      print("".join(str(dict[key]).ljust(keyMaxLens[key]+2))),
     print('')
-  return None
+
+  input = raw_input(prompt + ': ')
+  try:
+    dict = list[int(input)]
+    return dict
+  except:
+    return None
 
 def parse():
   parser = argparse.ArgumentParser()

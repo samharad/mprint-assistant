@@ -1,16 +1,15 @@
 from settings import webloginBaseURL, userBaseURL, guestBaseURL  # Base URLs
 import requests # Request library for interacting with API
 from getpass import getpass # Allows password entry
-from Document import Document
+from document import Document
 from fuzzywuzzy import fuzz
-from utils import getSelectionFromListOfDicts
+from utils import getSelection
 
 import sys
 import json
 import os
 
 class PrintSession:
-  
   # A printSession has a requestsSession for communicating with API
   session = requests.Session()
 
@@ -51,7 +50,7 @@ class PrintSession:
       sys.exit('Could not retrieve buildings')
     self.buildings = responseBuildings.json()
 
-    # Populates floors menu
+    # Populates floors menu TODO this is unneccessary?
     responseFloors = self.session.get(guestBaseURL + 'floors')
     if responseFloors.status_code != 200:
       sys.exit('Could not retrieve floors')
@@ -104,16 +103,35 @@ class PrintSession:
 
   def determineBuilding(self):
     possibleBuildings = []
-    while not self.building:
-      inputString = raw_input('Enter building name: ')
-      for dictionary in self.buildings['result']:
-        if fuzz.partial_ratio(inputString.lower(), dictionary['name'].lower()) == 100:
-          possibleBuildings.append(dictionary)
-      self.building = getSelectionFromListOfDicts(possibleBuildings, 'name', 'id')
+    inputString = raw_input('Enter building name: ')
+    for dictionary in self.buildings['result']:
+      if fuzz.partial_ratio(inputString.lower(), dictionary['name'].lower()) == 100:
+        possibleBuildings.append(dictionary)
+    self.building = getSelection(possibleBuildings, 'Select building', 'name', 'id')
 
+  def determineFloor(self):
+    possibleFloors = self.session.get(userBaseURL + 'floors', 
+                                      params={'buildingId':self.building['id']}).json()['result']
+    self.floor = getSelection(possibleFloors, 'Select floor', 'name', 'id')
+
+  def determineQueue(self):
+    possibleQueues = self.session.get(userBaseURL + 'queues', 
+                                      params={'floor':self.floor['id']}).json()['result']
+    self.queue = getSelection(possibleQueues, 'Select printer', 'display_name', 'model_name')
+
+  determineDocs(self):
+    if not self.documents:
+      self.documents = raw_input('Enter document paths separated by spaces').split()
+
+  printDocs(self):
+    for doc in self.documents:
+      self.session.post()
 
   def determineDestination(self):
-    if not self.building:
-      self.determineBuilding();
-
+    while not self.building:
+      self.determineBuilding()
+    while not self.floor:
+      self.determineFloor()
+    while not self.queue:
+      self.determineQueue()
 
