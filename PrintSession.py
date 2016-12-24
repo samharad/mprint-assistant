@@ -4,6 +4,8 @@ from getpass import getpass # Allows password entry
 from document import Document
 from fuzzywuzzy import fuzz
 from utils import getSelection
+import completer
+import readline
 
 import sys
 import json
@@ -100,10 +102,14 @@ class PrintSession:
 
   def determineBuilding(self):
     possibleBuildings = []
+    readline.set_completer(completer.Completer([x['name'] for x in self.buildings['result']]).completer)
     inputString = raw_input('Enter building name: ')
     for dictionary in self.buildings['result']:
       if fuzz.partial_ratio(inputString.lower(), dictionary['name'].lower()) == 100:
         possibleBuildings.append(dictionary)
+    if (len(possibleBuildings) == 1):
+      self.building = possibleBuildings[0]
+      return
     self.building = getSelection(possibleBuildings, 'Select building', 'name', 'id')
 
   def determineFloor(self):
@@ -118,6 +124,7 @@ class PrintSession:
 
   def determineDocs(self):
     if not self.documents:
+      readline.set_completer(completer.Completer().completer)
       self.documents = raw_input('Enter document paths separated by spaces: ').split()
 
   def printDocs(self):
