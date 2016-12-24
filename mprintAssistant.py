@@ -1,8 +1,14 @@
 from printSession import PrintSession
 from document import Document
 import utils
+import completer
+
+# TODO: change tab completer funcion per input (buildings, etc)
 
 def main(): 
+  # Sets up the completer
+  completer.completer_init()
+
   # Create new session
   session = PrintSession()
 
