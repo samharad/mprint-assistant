@@ -19,7 +19,6 @@ def completer(text, state):
 def completer_init():
   readline.parse_and_bind('tab: complete')
   readline.set_completer(completer)
-  readline.parse_and_bind("bind ^I rl_complete")
   readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
 
 # def main():
