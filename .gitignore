@@ -1,3 +1,6 @@
 venv/
 conventions.txt
 symlinkCommand.txt
+*.pyc
+*.swo
+*.swp

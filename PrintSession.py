@@ -27,8 +27,7 @@ class PrintSession:
   # Queue obj for user's desired floor
   queue = None
 
-  # Print session has list of DocumentClass
-  # Each doc has filepath, parameters
+  # Print session has list of Document objects
   documents = []
 
   # Dictionary; Print session has command line arguments:
@@ -50,14 +49,14 @@ class PrintSession:
       sys.exit('Could not retrieve buildings')
     self.buildings = responseBuildings.json()
 
-    # Populates floors menu TODO this is unneccessary?
+    # Populates floors menu with all floors TODO this is unneccessary?
     responseFloors = self.session.get(guestBaseURL + 'floors')
     if responseFloors.status_code != 200:
       sys.exit('Could not retrieve floors')
     self.floors = responseFloors.json()
 
   def interpretSysArgs(self):
-    # Sets Document params based no sys args
+    # Sets Document params based on sys args
     if self.sysArgs['landscape']:
       Document.params['orientation'] = Document.LANDSCAPE
     if self.sysArgs['one']:
@@ -82,8 +81,6 @@ class PrintSession:
       self.floor = filter(lambda dict: dict['id'] == self.sysArgs['floorId'], self.floors['result'])[0]
       if not self.floor:
         sys.exit('Could not find specified floor ID.')
-      # TODO should error check this? theoretically fine
-      print(self.floor)
       buildingId = self.floor['building_id']
       self.building = filter(lambda dict: dict['id'] == buildingId, self.buildings['result'])[0]
 
@@ -119,11 +116,11 @@ class PrintSession:
                                       params={'floor':self.floor['id']}).json()['result']
     self.queue = getSelection(possibleQueues, 'Select printer', 'display_name', 'model_name')
 
-  determineDocs(self):
+  def determineDocs(self):
     if not self.documents:
-      self.documents = raw_input('Enter document paths separated by spaces').split()
+      self.documents = raw_input('Enter document paths separated by spaces: ').split()
 
-  printDocs(self):
+  def printDocs(self):
     for doc in self.documents:
       self.session.post()
 
