@@ -25,7 +25,12 @@ class Completer:
     options = [x for x in self.list_from_path(text) if x.startswith(os.path.expanduser(text))]
     return options[state]
 
+  @staticmethod
+  def set_no_complete():
+    readline.set_completer(None)
+    readline.parse_and_bind('tab: self-insert')
+
 def readline_init():
   readline.parse_and_bind('tab: complete')
-  readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
+  readline.set_completer_delims('\t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
 
