@@ -1,11 +1,12 @@
 import argparse
 import sys
+from colorizer import Colorizer
 
 # Takes in a list of dictionaries, a prompt, and any number of keys,
 # prints nice columns from the lists along with selection indexes, 
 # prompts user for a selection and then returns that dictionary
 # keysToPrint is a tuple
-def getSelection(list, prompt, *keysToPrint):
+def getSelection(prompt_string, list, *keysToPrint):
   if not list:
     return None
 
@@ -17,23 +18,40 @@ def getSelection(list, prompt, *keysToPrint):
       if len(str(dict[key])) > keyMaxLens[key]:
         keyMaxLens[key] = len(str(dict[key]))
 
-  INDEX_WIDTH = 6
-  print("".join('INDEX'.ljust(INDEX_WIDTH))),
+  INDEX_WIDTH = 5
+  print(Colorizer.colorize("".join('INDEX'.ljust(INDEX_WIDTH)), 'underline')),
   for key in keysToPrint:
-    print("".join(key.upper().ljust(keyMaxLens[key]+2))),
+    print(Colorizer.colorize("".join(key.upper().ljust(keyMaxLens[key])), 'underline')),
   print('')
   for i, dict in enumerate(list):
     print("".join(('[' + str(i) + ']').ljust(INDEX_WIDTH))),
     for key in keysToPrint:
-      print("".join(str(dict[key]).ljust(keyMaxLens[key]+2))),
+      print("".join(str(change_01_to_NY(dict[key]).ljust(keyMaxLens[key])))),
     print('')
 
-  input = raw_input(prompt + ': ')
+  input = raw_input(prompt(prompt_string + ': '))
   try:
     dict = list[int(input)]
     return dict
   except:
     return None
+
+def change_01_to_NY(string):
+  if string == '0':
+    return 'N'
+  elif string == '1':
+    return 'Y'
+  else:
+    return string
+
+def color_by_status(string):
+  if 'success' in string: 
+    return Colorizer.colorize(string, 'green')
+  else: 
+    return Colorizer.colorize(string, 'red')
+
+def prompt(string):
+  return Colorizer.colorize(string, 'bold')
 
 def parse():
   parser = argparse.ArgumentParser()
@@ -60,10 +78,10 @@ def parse():
                       help='Print document with landscape orientation (portrait is default)')
   parser.add_argument('-r',
                       '--range', 
-                      nargs=2,
+                      nargs='+',
                       action='store',
                       required=False,
-                      help='Print only pages within range; specify as comma-separated list of pages/ranges of pages denoted with \'-\'')
+                      help='Print only pages within range; specify as \'x-x y-y z-z...\', one pair for each document')
   parser.add_argument('-c',
                       '--copies', 
                       nargs='+', 

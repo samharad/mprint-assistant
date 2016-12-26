@@ -1,4 +1,10 @@
 class Document:
+  VALID_EXTENSIONS = ('.ai', '.bmp', '.c', '.cpp', '.csv', '.doc', '.docx', 
+                      '.eps', '.gif', '.h', '.ico', '.jp2', '.jpeg', '.jpg', 
+                      '.m', '.odf', '.pdf', '.php', '.png', '.pps', '.ppsx', 
+                      '.ppt', '.pptx', '.ps', '.psd', '.py', '.rtf', '.tif', 
+                      '.tiff', '.txt', '.xls', '.xlsx', '.xml', '.xps')
+
   PORTRAIT = 'portrait'
   LANDSCAPE = 'landscape'
 
@@ -10,9 +16,12 @@ class Document:
   TABLOID = 'tabloid'
   CUSTOM = 'custom'
 
+  ON = 'on'
+  OFF = 'off'
+
   filePath = None
   params = {'copies': 1, 
-            'scale': True, 
+            'scale': ON, 
             'sides': TWO_SIDED_LONG, 
             'range': None, 
             'orientation': PORTRAIT,
