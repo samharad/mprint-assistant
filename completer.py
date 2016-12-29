@@ -5,8 +5,22 @@ import os
 class Completer:
   vocab_list = None
 
-  def __init__(self, vocab_list_in = None):
+  # def __init__(self, vocab_list_in = None):
+    # self.vocab_list = vocab_list_in
+
+  def set_vocab_list(self, vocab_list_in = None):
     self.vocab_list = vocab_list_in
+    readline.parse_and_bind('tab: complete')
+    readline.set_completer(self.completer)
+
+  def set_path_completion(self):
+    self.vocab_list = None
+    readline.parse_and_bind('tab: complete')
+    readline.set_completer(self.completer)
+    
+  def deactivate(self):
+    vocab_list = None
+    readline.parse_and_bind('tab: self-insert')
 
   def list_from_path(self, path):
     if path.startswith(os.path.sep) or path.startswith('~'): # Absolute path 
