@@ -11,6 +11,9 @@ from completer import Completer, readline_init
 from colorizer import Colorizer
 
 class PrintSession:
+  # A printSession has a completer
+  completer = Completer()
+
   # A printSession has a requestsSession for communicating with API
   session = requests.Session()
 
@@ -124,8 +127,9 @@ class PrintSession:
 
   def determineBuilding(self):
     possibleBuildings = []
-    readline.set_completer(Completer([x['name'] for x in self.buildings['result']]).completer)
-    readline.parse_and_bind('tab: complete')
+    # readline.set_completer(Completer([x['name'] for x in self.buildings['result']]).completer)
+    # readline.parse_and_bind('tab: complete')
+    self.completer.set_vocab_list([x['name'] for x in self.buildings['result']])
     inputString = raw_input(prompt('Enter building name: '))
     for dictionary in self.buildings['result']:
       if inputString.lower() in dictionary['name'].lower():
@@ -147,8 +151,9 @@ class PrintSession:
 
   def determineDocs(self):
     if not self.documents:
-      readline.set_completer(Completer().completer)
-      readline.parse_and_bind('tab: complete')
+      # readline.set_completer(Completer().completer)
+      # readline.parse_and_bind('tab: complete')
+      self.completer.set_path_completion()
       doc_strings = raw_input(prompt('Enter document paths separated by spaces: ')).split()
       for doc_string in doc_strings:
         self.documents.append(Document(doc_string))
@@ -169,8 +174,9 @@ class PrintSession:
     print("Documents: ") 
     for doc in self.documents:
       print(doc) 
-    readline.set_completer(None)
-    readline.parse_and_bind('tab: self-insert')
+    # readline.set_completer(None)
+    # readline.parse_and_bind('tab: self-insert')
+    self.completer.deactivate()
     response = raw_input(prompt("Press enter to continue")) # TODO
 
   def determineDestination(self):
