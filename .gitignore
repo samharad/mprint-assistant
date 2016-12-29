@@ -4,3 +4,10 @@ symlinkCommand.txt
 *.pyc
 *.swo
 *.swp
+python27venv
+python36venv
+build/
+dist/
+mprint_assistant.egg-info/
+mprintassistant-runner.py
+python26venv/

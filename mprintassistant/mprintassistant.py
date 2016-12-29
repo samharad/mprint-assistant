@@ -1,9 +1,7 @@
 #! /usr/bin/env python
 
-from printSession import PrintSession
-from document import Document
-import utils
-import completer
+from .printsession import PrintSession
+from .document import Document
 from colorama import init as colorama_init
 
 # TODO
@@ -25,9 +23,6 @@ def main():
   # Lets colored output work on Windows
   colorama_init()
 
-  # Sets up readline
-  completer.readline_init()
-
   # Create new session; authenticates, populates menu
   session = PrintSession()
 
@@ -41,5 +36,5 @@ def main():
   session.printDocs()
 
 
-if __name__ == "__main__":
-  main()
+# if __name__ == "__main__":
+  # main()

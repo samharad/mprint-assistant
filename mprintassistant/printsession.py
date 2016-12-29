@@ -1,14 +1,15 @@
 import sys
 import os
 import json
-from settings import webloginBaseURL, userBaseURL, guestBaseURL  # Base URLs
+from .settings import webloginBaseURL, userBaseURL, guestBaseURL  # Base URLs
 import requests # Request library for interacting with API
 from getpass import getpass # Allows password entry
-from document import Document
-from utils import getSelection, prompt, color_by_status, parse
+from .document import Document
+from .utils import getSelection, prompt, color_by_status, parse
 import readline
-from completer import Completer, readline_init
-from colorizer import Colorizer
+from .completer import Completer, readline_init
+from .colorizer import Colorizer
+from builtins import input # So that Python 2 and 3 can both call input()
 
 class PrintSession:
   # A printSession has a completer
@@ -47,10 +48,10 @@ class PrintSession:
   sysArgs = None
 
   def __init__(self):
+    self.populateMenus()
     self.setSysArgs(vars(parse()))
     self.interpretSysArgs()
     self.authenticate()
-    self.populateMenus()
 
   def setSysArgs(self, sysArgsIn):
     self.sysArgs = sysArgsIn
@@ -94,17 +95,17 @@ class PrintSession:
         self.documents.append(doc)
 
     if self.sysArgs['floorId']:
-      self.floor = filter(lambda dict: dict['id'] == self.sysArgs['floorId'], self.floors['result'])[0]
+      self.floor = list(filter(lambda dict: dict['id'] == self.sysArgs['floorId'], self.floors['result']))[0]
       if not self.floor:
         sys.exit('Could not find specified floor ID.')
       buildingId = self.floor['building_id']
-      self.building = filter(lambda dict: dict['id'] == buildingId, self.buildings['result'])[0]
+      self.building = list(filter(lambda dict: dict['id'] == buildingId, self.buildings['result']))[0]
 
   def authenticate(self):
     response = self.session.get(webloginBaseURL)
     Completer.set_no_complete()
     response = self.session.post(webloginBaseURL, 
-                                 data={'login':raw_input(prompt('Enter username: ')), 
+                                 data={'login':input(prompt('Enter username: ')), 
                                  'password':getpass(prompt=prompt('Enter password: '))}, 
                                  allow_redirects=False)
 
@@ -130,7 +131,7 @@ class PrintSession:
     # readline.set_completer(Completer([x['name'] for x in self.buildings['result']]).completer)
     # readline.parse_and_bind('tab: complete')
     self.completer.set_vocab_list([x['name'] for x in self.buildings['result']])
-    inputString = raw_input(prompt('Enter building name: '))
+    inputString = input(prompt('Enter building name: '))
     for dictionary in self.buildings['result']:
       if inputString.lower() in dictionary['name'].lower():
         possibleBuildings.append(dictionary)
@@ -142,11 +143,13 @@ class PrintSession:
   def determineFloor(self):
     possibleFloors = self.session.get(userBaseURL + 'floors', 
                                       params={'buildingId':self.building['id']}).json()['result']
+    self.completer.deactivate()
     self.floor = getSelection('Select floor', possibleFloors, 'name', 'id')
 
   def determineQueue(self):
     possibleQueues = self.session.get(userBaseURL + 'queues', 
                                       params={'floor':self.floor['id']}).json()['result']
+    self.completer.deactivate()
     self.queue = getSelection('Select printer', possibleQueues, 'display_name', 'model_name', 'color', 'tabloid')
 
   def determineDocs(self):
@@ -154,7 +157,7 @@ class PrintSession:
       # readline.set_completer(Completer().completer)
       # readline.parse_and_bind('tab: complete')
       self.completer.set_path_completion()
-      doc_strings = raw_input(prompt('Enter document paths separated by spaces: ')).split()
+      doc_strings = input(prompt('Enter document paths separated by spaces: ')).split()
       for doc_string in doc_strings:
         self.documents.append(Document(doc_string))
 
@@ -177,7 +180,7 @@ class PrintSession:
     # readline.set_completer(None)
     # readline.parse_and_bind('tab: self-insert')
     self.completer.deactivate()
-    response = raw_input(prompt("Press enter to continue")) # TODO
+    response = input(prompt("Press enter to continue")) # TODO
 
   def determineDestination(self):
     while not self.building:
@@ -186,4 +189,3 @@ class PrintSession:
       self.determineFloor()
     while not self.queue:
       self.determineQueue()
-
