@@ -76,10 +76,8 @@ class PrintSession:
     # Checks that documents exist and appends them to documents with ranges and copies
     if self.sysArgs['documents']:
       for i, pathIn in enumerate(self.sysArgs['documents']):
-        if os.path.isdir(pathIn):
-          sys.exit('\'' + pathIn + '\' is a directory')
         if not os.path.isfile(pathIn):
-          sys.exit('\'' + pathIn + '\' cannot be found.')
+          sys.exit('\'' + pathIn + '\' is not a file.')
         if not pathIn.lower().endswith(Document.VALID_EXTENSIONS):
           sys.exit('Invalid file extension')
         doc = Document(pathIn)
@@ -159,6 +157,8 @@ class PrintSession:
       self.completer.set_path_completion()
       doc_strings = input(prompt('Enter document paths separated by spaces: ')).split()
       for doc_string in doc_strings:
+        if not os.path.isfile(doc_string):
+          sys.exit('\'' + doc_string + '\' is not a file')
         self.documents.append(Document(doc_string))
 
   def printDocs(self):
@@ -173,7 +173,7 @@ class PrintSession:
   def summarizeJob(self):
     print("Building: " + self.building['name'])
     print("Floor: " + self.floor['name'])
-    print("Queue: " + self.queue['name'])
+    print("Queue: " + self.queue['display_name'])
     print("Documents: ") 
     for doc in self.documents:
       print(doc) 
