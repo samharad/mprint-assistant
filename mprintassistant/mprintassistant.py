@@ -11,10 +11,6 @@ from colorama import init as colorama_init
   # flag for color printing, tabloid flag
   # building specifier flag, and floor number? 
 # Add way to print code cheat sheet?
-# Compatibility checks with venv, then package it
-# Restructure completer so calling is more simple -- completer.set_file_complete, completer.set_list_complete(list) 
-  # Maybe don't need instances, just static
-# Verify cannot print directory
 # Handle lack of internet connection
   # If the response is not decodeable, cannot do .json()['result']
 
