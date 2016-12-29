@@ -1,6 +1,8 @@
+from __future__ import print_function # So that python 2.6+ can use the end= syntax
 import argparse
 import sys
-from colorizer import Colorizer
+from .colorizer import Colorizer
+from builtins import input
 
 # Takes in a list of dictionaries, a prompt, and any number of keys,
 # prints nice columns from the lists along with selection indexes, 
@@ -19,19 +21,19 @@ def getSelection(prompt_string, list, *keysToPrint):
         keyMaxLens[key] = len(str(dict[key]))
 
   INDEX_WIDTH = 5
-  print(Colorizer.colorize("".join('INDEX'.ljust(INDEX_WIDTH)), 'underline')),
+  print(Colorizer.colorize("".join('INDEX'.ljust(INDEX_WIDTH)), 'underline'), end=" ")
   for key in keysToPrint:
-    print(Colorizer.colorize("".join(key.upper().ljust(keyMaxLens[key])), 'underline')),
+    print(Colorizer.colorize("".join(key.upper().ljust(keyMaxLens[key])), 'underline'), end=" ")
   print('')
   for i, dict in enumerate(list):
-    print("".join(('[' + str(i) + ']').ljust(INDEX_WIDTH))),
+    print("".join(('[' + str(i) + ']').ljust(INDEX_WIDTH)), end=" ")
     for key in keysToPrint:
-      print("".join(str(change_01_to_NY(dict[key]).ljust(keyMaxLens[key])))),
+      print("".join(str(change_01_to_NY(dict[key]).ljust(keyMaxLens[key]))), end=" ")
     print('')
 
-  input = raw_input(prompt(prompt_string + ': '))
+  selection = input(prompt(prompt_string + ': '))
   try:
-    dict = list[int(input)]
+    dict = list[int(selection)]
     return dict
   except:
     return None

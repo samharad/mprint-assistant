@@ -11,11 +11,15 @@ class Completer:
   def set_vocab_list(self, vocab_list_in = None):
     self.vocab_list = vocab_list_in
     readline.parse_and_bind('tab: complete')
+    # Space must not be a delimiter since building names etc. can have spaces in them, and one is always specified
+    readline.set_completer_delims('\t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
     readline.set_completer(self.completer)
 
   def set_path_completion(self):
     self.vocab_list = None
     readline.parse_and_bind('tab: complete')
+    # Space must be a delimiter so that multiple docs can be specified
+    readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?') 
     readline.set_completer(self.completer)
     
   def deactivate(self):
@@ -28,7 +32,11 @@ class Completer:
       contents = os.listdir(basedir)
       contents = [os.path.join(basedir, d) for d in contents]
     else: # Relative path
-      contents = os.listdir(os.curdir) 
+      if os.path.dirname(path) == '': # No directory yet specified
+        contents = os.listdir(os.curdir)
+      else: # At least one directory specified
+        contents = os.listdir(os.path.dirname(path))
+        contents = [os.path.join(os.path.dirname(path), d) for d in contents]
     contents = [d + os.path.sep if os.path.isdir(d) else d for d in contents]
     return contents
 
@@ -43,8 +51,9 @@ class Completer:
   def set_no_complete():
     readline.set_completer(None)
     readline.parse_and_bind('tab: self-insert')
+    readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
 
 def readline_init():
   readline.parse_and_bind('tab: complete')
-  readline.set_completer_delims('\t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
+  readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
 
