@@ -54,6 +54,6 @@ class Completer:
     readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
 
 def readline_init():
+  print('running readline init')
   readline.parse_and_bind('tab: complete')
   readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
-
