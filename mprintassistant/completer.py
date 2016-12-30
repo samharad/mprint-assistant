@@ -42,7 +42,7 @@ class Completer:
 
   def completer(self, text, state):
     if self.vocab_list:
-      options = [x for x in self.vocab_list if x.startswith(text)]
+      options = [x for x in self.vocab_list if x.lower().startswith(text.lower())]
       return options[state]
     options = [x for x in self.list_from_path(text) if x.startswith(os.path.expanduser(text))]
     return options[state]
