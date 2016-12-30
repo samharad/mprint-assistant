@@ -5,7 +5,7 @@ from .settings import webloginBaseURL, userBaseURL, guestBaseURL  # Base URLs
 import requests # Request library for interacting with API
 from getpass import getpass # Allows password entry
 from .document import Document
-from .utils import getSelection, prompt, color_by_status, parse
+from .utils import getSelection, prompt, color_by_status, parse, make_acronym
 import readline
 from .completer import Completer, readline_init
 from .colorizer import Colorizer
@@ -129,7 +129,7 @@ class PrintSession:
     self.completer.set_vocab_list([x['name'] for x in self.buildings['result']])
     inputString = input(prompt('Enter building name: '))
     for dictionary in self.buildings['result']:
-      if inputString.lower() in dictionary['name'].lower() or inputString.lower() in dictionary['id'].lower():
+      if inputString.lower() in dictionary['name'].lower() or inputString.lower() in dictionary['id'].lower() or inputString.lower() in make_acronym(dictionary['name']).lower():
         possibleBuildings.append(dictionary)
     if len(possibleBuildings) == 1:
       self.building = possibleBuildings[0]
@@ -141,12 +141,18 @@ class PrintSession:
                                       params={'buildingId':self.building['id']}).json()['result']
     self.completer.deactivate()
     self.floor = getSelection('Select floor', possibleFloors, 'name', 'id')
+    # If none selected, reset building choice too
+    if not self.floor:
+      self.building = None
 
   def determineQueue(self):
     possibleQueues = self.session.get(userBaseURL + 'queues', 
                                       params={'floor':self.floor['id']}).json()['result']
     self.completer.deactivate()
     self.queue = getSelection('Select printer', possibleQueues, 'display_name', 'model_name', 'color', 'tabloid')
+    # If none selected, reset floor choice too
+    if not self.queue:
+      self.floor = None
 
   def determineDocs(self):
     if not self.documents:
@@ -175,15 +181,14 @@ class PrintSession:
     print("Documents: ") 
     for doc in self.documents:
       print(doc) 
-    # readline.set_completer(None)
-    # readline.parse_and_bind('tab: self-insert')
     self.completer.deactivate()
     response = input(prompt("Press enter to continue")) # TODO
 
   def determineDestination(self):
-    while not self.building:
-      self.determineBuilding()
-    while not self.floor:
-      self.determineFloor()
-    while not self.queue:
-      self.determineQueue()
+    while not self.building or not self.floor or not self.queue:
+      if not self.building:
+        self.determineBuilding()
+      if self.building and not self.floor:
+        self.determineFloor()
+      if self.building and self.floor and not self.queue:
+        self.determineQueue()

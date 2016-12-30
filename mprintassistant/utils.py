@@ -33,7 +33,9 @@ def getSelection(prompt_string, list, *keysToPrint):
 
   selection = input(prompt(prompt_string + ': '))
   try:
-    dict = list[int(selection)]
+    selection_index = int(selection)
+    if selection_index < 0: return None
+    dict = list[selection_index]
     return dict
   except:
     return None
@@ -110,13 +112,8 @@ def parse():
   args = parser.parse_args()
   return args
 
-
-
-
-
-
-
-
+def make_acronym(string):
+  return "".join(word[0] for word in string.replace('-', ' ').split() if word[0].isupper())
 
 
 
