@@ -1,8 +1,8 @@
 from __future__ import print_function # So that python 2.6+ can use the end= syntax
 import argparse
 import sys
-from .colorizer import Colorizer
 from builtins import input
+from termcolor import colored
 
 # Takes in a list of dictionaries, a prompt, and any number of keys,
 # prints nice columns from the lists along with selection indexes, 
@@ -21,9 +21,9 @@ def getSelection(prompt_string, list, *keysToPrint):
         keyMaxLens[key] = len(str(dict[key]))
 
   INDEX_WIDTH = 5
-  print(Colorizer.colorize("".join('INDEX'.ljust(INDEX_WIDTH)), 'underline'), end=" ")
+  print(colored("".join('INDEX'.ljust(INDEX_WIDTH)), attrs=['underline']), end=" ")
   for key in keysToPrint:
-    print(Colorizer.colorize("".join(key.upper().ljust(keyMaxLens[key])), 'underline'), end=" ")
+    print(colored("".join(key.upper().ljust(keyMaxLens[key])), attrs=['underline']), end=" ")
   print('')
   for i, dict in enumerate(list):
     print("".join(('[' + str(i) + ']').ljust(INDEX_WIDTH)), end=" ")
@@ -50,12 +50,15 @@ def change_01_to_NY(string):
 
 def color_by_status(string):
   if 'success' in string: 
-    return Colorizer.colorize(string, 'green')
+    return colored(string, 'green')
   else: 
-    return Colorizer.colorize(string, 'red')
+    return colored(string, 'red')
 
+# Escape sequences used for colors, in combination with readline, break input()
+# Since tab completion is more useful than the bold prompt, the bold prompt is nixed
 def prompt(string):
-  return Colorizer.colorize(string, 'bold')
+  # return colored(string, attrs=['bold'])
+  return string
 
 def parse():
   parser = argparse.ArgumentParser()

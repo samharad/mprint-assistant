@@ -8,7 +8,6 @@ from .document import Document
 from .utils import getSelection, prompt, color_by_status, parse, make_acronym
 import readline
 from .completer import Completer, readline_init
-from .colorizer import Colorizer
 from builtins import input # So that Python 2 and 3 can both call input()
 
 class PrintSession:
