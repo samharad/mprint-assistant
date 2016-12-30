@@ -126,12 +126,10 @@ class PrintSession:
 
   def determineBuilding(self):
     possibleBuildings = []
-    # readline.set_completer(Completer([x['name'] for x in self.buildings['result']]).completer)
-    # readline.parse_and_bind('tab: complete')
     self.completer.set_vocab_list([x['name'] for x in self.buildings['result']])
     inputString = input(prompt('Enter building name: '))
     for dictionary in self.buildings['result']:
-      if inputString.lower() in dictionary['name'].lower():
+      if inputString.lower() in dictionary['name'].lower() or inputString.lower() in dictionary['id'].lower():
         possibleBuildings.append(dictionary)
     if len(possibleBuildings) == 1:
       self.building = possibleBuildings[0]
