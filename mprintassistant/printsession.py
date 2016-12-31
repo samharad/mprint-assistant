@@ -99,29 +99,40 @@ class PrintSession:
       self.building = list(filter(lambda dict: dict['id'] == buildingId, self.buildings['result']))[0]
 
   def authenticate(self):
-    response = self.session.get(webloginBaseURL)
-    Completer.set_no_complete()
-    response = self.session.post(webloginBaseURL, 
-                                 data={'login':input(prompt('Enter username: ')), 
-                                 'password':getpass(prompt=prompt('Enter password: '))}, 
-                                 allow_redirects=False)
+    try:
+      response = self.session.get(webloginBaseURL)
+      Completer.set_no_complete()
+      response = self.session.post(webloginBaseURL, 
+                                   data={'login':input(prompt('Enter username: ')), 
+                                   'password':getpass(prompt=prompt('Enter password: '))}, 
+                                   allow_redirects=False)
 
-    # Redirect code means successful login
-    if response.status_code != 302:
-      sys.exit('Invalid credentials.')
+      # Redirect code means successful login
+      if response.status_code != 302:
+        sys.exit('Invalid credentials.')
+    except KeyboardInterrupt:
+      sys.exit()
+    except requests.exceptions.RequestException:
+      sys.exit('Problem calling mprint API. Check internet connection.')
    
   def populateMenus(self):
-    # Populates buildings menu
-    responseBuildings = self.session.get(guestBaseURL + 'buildings')
-    if responseBuildings.status_code != 200:
-      sys.exit('Could not retrieve buildings')
-    self.buildings = responseBuildings.json()
+    try:
+      # Populates buildings menu
+      responseBuildings = self.session.get(guestBaseURL + 'buildings')
+      if responseBuildings.status_code != 200:
+        sys.exit('Could not retrieve buildings')
+      self.buildings = responseBuildings.json()
 
-    # Populates floors menu with all floors TODO this is unneccessary?
-    responseFloors = self.session.get(guestBaseURL + 'floors')
-    if responseFloors.status_code != 200:
-      sys.exit('Could not retrieve floors')
-    self.floors = responseFloors.json()
+      # Populates floors menu with all floors TODO this is unneccessary?
+      responseFloors = self.session.get(guestBaseURL + 'floors')
+      if responseFloors.status_code != 200:
+        sys.exit('Could not retrieve floors')
+      self.floors = responseFloors.json()
+    except KeyboardInterrupt:
+      sys.exit()
+    # except:
+    except requests.exceptions.RequestException:
+      sys.exit('Problem calling mprint API. Check internet connection.') 
 
   def determineBuilding(self):
     possibleBuildings = []
@@ -136,22 +147,34 @@ class PrintSession:
     self.building = getSelection('Select building', possibleBuildings, 'name', 'id')
 
   def determineFloor(self):
-    possibleFloors = self.session.get(userBaseURL + 'floors', 
-                                      params={'buildingId':self.building['id']}).json()['result']
-    self.completer.deactivate()
-    self.floor = getSelection('Select floor', possibleFloors, 'name', 'id')
-    # If none selected, reset building choice too
-    if not self.floor:
-      self.building = None
+    try:
+      possibleFloors = self.session.get(userBaseURL + 'floors', 
+                                        params={'buildingId':self.building['id']}).json()['result']
+      self.completer.deactivate()
+      self.floor = getSelection('Select floor', possibleFloors, 'name', 'id')
+      # If none selected, reset building choice too
+      if not self.floor:
+        self.building = None
+    except KeyboardInterrupt:
+      sys.exit()
+    # except:
+    except requests.exceptions.RequestException:
+      sys.exit('Problem calling mprint API. Check internet connection.') 
 
   def determineQueue(self):
-    possibleQueues = self.session.get(userBaseURL + 'queues', 
-                                      params={'floor':self.floor['id']}).json()['result']
-    self.completer.deactivate()
-    self.queue = getSelection('Select printer', possibleQueues, 'display_name', 'model_name', 'color', 'tabloid')
-    # If none selected, reset floor choice too
-    if not self.queue:
-      self.floor = None
+    try:
+      possibleQueues = self.session.get(userBaseURL + 'queues', 
+                                        params={'floor':self.floor['id']}).json()['result']
+      self.completer.deactivate()
+      self.queue = getSelection('Select printer', possibleQueues, 'display_name', 'model_name', 'color', 'tabloid')
+      # If none selected, reset floor choice too
+      if not self.queue:
+        self.floor = None
+    except KeyboardInterrupt:
+      sys.exit()
+    # except:
+    except requests.exceptions.RequestException:
+      sys.exit('Problem calling mprint API. Check internet connection.') 
 
   def determineDocs(self):
     if not self.documents:
@@ -165,13 +188,19 @@ class PrintSession:
         self.documents.append(Document(doc_string))
 
   def printDocs(self):
-    self.summarizeJob()
-    for doc in self.documents:
-      doc_file = {'file': open(doc.filePath, 'rb')}
-      doc_params = doc.params 
-      doc_params['queue'] = self.queue['name']
-      printStatus = self.session.post(userBaseURL + 'jobs', files=doc_file, params=doc_params).json()
-      print(os.path.basename(doc.filePath) + ": " + color_by_status(printStatus['status']))
+    try:
+      self.summarizeJob() # Blocks until user input
+      for doc in self.documents:
+        doc_file = {'file': open(doc.filePath, 'rb')}
+        doc_params = doc.params 
+        doc_params['queue'] = self.queue['name']
+        printStatus = self.session.post(userBaseURL + 'jobs', files=doc_file, params=doc_params).json()
+        print(os.path.basename(doc.filePath) + ": " + color_by_status(printStatus['status']))
+    except KeyboardInterrupt:
+      sys.exit()
+    # except:
+    except requests.exceptions.RequestException:
+      sys.exit('Problem calling mprint API. Check internet connection.') 
 
   def summarizeJob(self):
     print("Building: " + self.building['name'])
@@ -181,7 +210,10 @@ class PrintSession:
     for doc in self.documents:
       print(doc) 
     self.completer.deactivate()
-    response = input(prompt("Press enter to continue")) # TODO
+    if not self.sysArgs['quick']:
+      response = input(prompt("Press enter to continue; anything to quit")) # TODO
+      if response != "":
+        sys.exit()
 
   def determineDestination(self):
     while not self.building or not self.floor or not self.queue:
