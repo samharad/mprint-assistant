@@ -6,8 +6,8 @@ import requests # Request library for interacting with API
 from getpass import getpass # Allows password entry
 from .document import Document
 from .utils import getSelection, prompt, color_by_status, parse, make_acronym
-import readline
-from .completer import Completer, readline_init
+import gnureadline
+from .completer import Completer, gnureadline_init
 from builtins import input # So that Python 2 and 3 can both call input()
 
 class PrintSession:
@@ -178,8 +178,8 @@ class PrintSession:
 
   def determineDocs(self):
     if not self.documents:
-      # readline.set_completer(Completer().completer)
-      # readline.parse_and_bind('tab: complete')
+      # gnureadline.set_completer(Completer().completer)
+      # gnureadline.parse_and_bind('tab: complete')
       self.completer.set_path_completion()
       doc_strings = input(prompt('Enter document paths separated by spaces: ')).split()
       for doc_string in doc_strings:

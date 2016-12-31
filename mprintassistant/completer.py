@@ -1,4 +1,4 @@
-import readline
+import gnureadline
 import sys
 import os
 
@@ -10,21 +10,21 @@ class Completer:
 
   def set_vocab_list(self, vocab_list_in = None):
     self.vocab_list = vocab_list_in
-    readline.parse_and_bind('tab: complete')
+    gnureadline.parse_and_bind('tab: complete')
     # Space must not be a delimiter since building names etc. can have spaces in them, and one is always specified
-    readline.set_completer_delims('\t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
-    readline.set_completer(self.completer)
+    gnureadline.set_completer_delims('\t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
+    gnureadline.set_completer(self.completer)
 
   def set_path_completion(self):
     self.vocab_list = None
-    readline.parse_and_bind('tab: complete')
+    gnureadline.parse_and_bind('tab: complete')
     # Space must be a delimiter so that multiple docs can be specified
-    readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?') 
-    readline.set_completer(self.completer)
+    gnureadline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?') 
+    gnureadline.set_completer(self.completer)
     
   def deactivate(self):
     vocab_list = None
-    readline.parse_and_bind('tab: self-insert')
+    gnureadline.parse_and_bind('tab: self-insert')
 
   def list_from_path(self, path):
     if path.startswith(os.path.sep) or path.startswith('~'): # Absolute path 
@@ -49,11 +49,11 @@ class Completer:
 
   @staticmethod
   def set_no_complete():
-    readline.set_completer(None)
-    readline.parse_and_bind('tab: self-insert')
-    readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
+    gnureadline.set_completer(None)
+    gnureadline.parse_and_bind('tab: self-insert')
+    gnureadline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
 
-def readline_init():
-  print('running readline init')
-  readline.parse_and_bind('tab: complete')
-  readline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
+def gnureadline_init():
+  print('running gnureadline init')
+  gnureadline.parse_and_bind('tab: complete')
+  gnureadline.set_completer_delims(' \t\n`!@#$%^&*()-=+[{]}\\|;:\'",<>?')
