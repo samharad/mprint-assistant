@@ -1,6 +1,8 @@
 ===== 
 MPrint Assistant
 ===== 
+.. image:: https://badge.fury.io/py/mprint-assistant.svg
+    :target: https://badge.fury.io/py/mprint-assistant
 Intro
 -------- 
 MPrint Assistant gives command line users a simple, fast way to print documents to University of Michigan printers. Unlike the browser MPrint interface, MPrint Assistant allows multiple documents to be simultaneously selected and sent to a printer.
