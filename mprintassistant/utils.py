@@ -67,16 +67,16 @@ def parse():
                       nargs='+', 
                       required=False,
                       help='Specify at least one document to be printed')
+  parser.add_argument('-b', 
+                      '--buildingId',
+                      action='store',
+                      required=False,
+                      help='Specify buildingID of desired printer')
   parser.add_argument('-f', 
                       '--floorId', 
                       action='store', 
                       required=False, 
-                      help='Specify floorID of desired printer, if known')
-  parser.add_argument('-b', 
-                      '--building',
-                      action='store',
-                      required=False,
-                      help='Specify building of desired printer')
+                      help='Specify floorID of desired printer, if known; takes precendence over buildingId')
   parser.add_argument('-l', 
                       '--landscape', 
                       action='store_const', 
@@ -118,6 +118,18 @@ def parse():
                       const=True,
                       required=False,
                       help='Quick mode: will not ask for confirmation before printing')
+  parser.add_argument('-C',
+                      '--color',
+                      action='store_const',
+                      const=True,
+                      required=False,
+                      help='Look only for colored printers')
+  parser.add_argument('-T',
+                      '--tabloid',
+                      action='store_const',
+                      const=True,
+                      required=False,
+                      help='Look only for tabloid printers')
   args = parser.parse_args()
   return args
 

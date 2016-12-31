@@ -5,12 +5,6 @@ from .printsession import PrintSession
 from .document import Document
 from colorama import init as colorama_init
 
-# TODO
-# Test floor code flags -- add more shortcut flags -- try to minimize the minimum input
-  # flag for color printing, tabloid flag
-  # building specifier flag, and floor number? 
-# Add way to print code cheat sheet?
-
 def main(): 
   try:
     # Lets colored output work on Windows

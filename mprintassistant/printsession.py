@@ -91,12 +91,23 @@ class PrintSession:
           doc.params['range'] = self.sysArgs['range'][i]
         self.documents.append(doc)
 
+    if self.sysArgs['buildingId']:
+      try:
+        self.building = list(filter(lambda dict: dict['id'] == self.sysArgs['buildingId'], self.buildings['result']))[0]
+        if not self.building:
+          sys.exit('Could not find specified building ID.')
+      except IndexError:
+        sys.exit('Could not find specified building.')
+
     if self.sysArgs['floorId']:
-      self.floor = list(filter(lambda dict: dict['id'] == self.sysArgs['floorId'], self.floors['result']))[0]
-      if not self.floor:
-        sys.exit('Could not find specified floor ID.')
-      buildingId = self.floor['building_id']
-      self.building = list(filter(lambda dict: dict['id'] == buildingId, self.buildings['result']))[0]
+      try:
+        self.floor = list(filter(lambda dict: dict['id'] == self.sysArgs['floorId'], self.floors['result']))[0]
+        if not self.floor:
+          sys.exit('Could not find specified floor ID.')
+        buildingId = self.floor['building_id']
+        self.building = list(filter(lambda dict: dict['id'] == buildingId, self.buildings['result']))[0]
+      except IndexError:
+        sys.exit('Could not find specified floor.')
 
   def authenticate(self):
     try:
@@ -123,7 +134,7 @@ class PrintSession:
         sys.exit('Could not retrieve buildings')
       self.buildings = responseBuildings.json()
 
-      # Populates floors menu with all floors TODO this is unneccessary?
+      # Populates floors menu
       responseFloors = self.session.get(guestBaseURL + 'floors')
       if responseFloors.status_code != 200:
         sys.exit('Could not retrieve floors')
@@ -163,9 +174,19 @@ class PrintSession:
 
   def determineQueue(self):
     try:
+      p = {'floor':self.floor['id']}
+      if self.sysArgs['color']:
+        p['color'] = ""
+      # if self.sysArgs['poster']:
+        # p['poster'] = ""
+      if self.sysArgs['tabloid']:
+        p['tabloid'] = ""
       possibleQueues = self.session.get(userBaseURL + 'queues', 
-                                        params={'floor':self.floor['id']}).json()['result']
+                                        params=p).json()['result']
       self.completer.deactivate()
+      if len(possibleQueues) == 1:
+        self.queue = possibleQueues[0]
+        return
       self.queue = getSelection('Select printer', possibleQueues, 'display_name', 'model_name', 'color', 'tabloid')
       # If none selected, reset floor choice too
       if not self.queue:
@@ -211,7 +232,7 @@ class PrintSession:
       print(doc) 
     self.completer.deactivate()
     if not self.sysArgs['quick']:
-      response = input(prompt("Press enter to continue; anything to quit")) # TODO
+      response = input(prompt("Press enter to continue; anything to quit ")) 
       if response != "":
         sys.exit()
 
