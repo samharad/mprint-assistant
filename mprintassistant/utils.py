@@ -112,6 +112,12 @@ def parse():
                       const=True,
                       required=False, 
                       help='Do not scale to page (default is fit to page)')
+  parser.add_argument('-q',
+                      '--quick',
+                      action='store_const',
+                      const=True,
+                      required=False,
+                      help='Quick mode: will not ask for confirmation before printing')
   args = parser.parse_args()
   return args
 
