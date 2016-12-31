@@ -14,7 +14,7 @@ Features include:
 
 Installation
 --------
-Install using pip:
+Install using pip::
 
     pip install mprint-assistant
     
