@@ -11,7 +11,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='mprint-assistant', 
-      version='0.1',
+      version='0.2',
       description='Easy printing to U of M printers',
       long_description=long_description,
       author='Sam Adams',
@@ -34,7 +34,7 @@ setup(name='mprint-assistant',
       install_requires=['colorama',
                         'termcolor',
                         'requests',
-                        'readline',
+                        'gnureadline',
                         'argparse',
                         'future'
                         ] 
