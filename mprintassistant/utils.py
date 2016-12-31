@@ -4,15 +4,20 @@ import sys
 from builtins import input
 from termcolor import colored
 
-# Takes in a list of dictionaries, a prompt, and any number of keys,
-# prints nice columns from the lists along with selection indexes, 
-# prompts user for a selection and then returns that dictionary
-# keysToPrint is a tuple
+"""Utilities for use by PrintSession."""
+
 def getSelection(prompt_string, list, *keysToPrint):
+  """Gets user's selection from a list of dictionaries.
+  
+  Takes in a prompt string, a list of dictionaries, and any number
+  of keys. Prints nice columns from the lists along with selection indices,
+  prompts user for a selection and returns that dictionary.
+  keysToPrint is a tuple.
+  """
   if not list:
     return None
 
-  # Okay, we need to get len(max(values of all dicts ar key)) for ea. key
+  # Get len(max(values of all of the dicts at key)) for ea. key
   keyMaxLens = {}
   for key in keysToPrint:
     keyMaxLens[key] = len(str(key))
@@ -41,6 +46,10 @@ def getSelection(prompt_string, list, *keysToPrint):
     return None
 
 def change_01_to_NY(string):
+  """Converts 0 to N, 1 to Y.
+  
+  Called by getSelection to generate cleaner output.
+  """
   if string == '0':
     return 'N'
   elif string == '1':
@@ -49,18 +58,28 @@ def change_01_to_NY(string):
     return string
 
 def color_by_status(string):
+  """Returns colored string.
+  
+  Green if success, red otherwise.
+  """
   if 'success' in string: 
     return colored(string, 'green')
   else: 
     return colored(string, 'red')
 
-# Escape sequences used for colors, in combination with readline, break input()
-# Since tab completion is more useful than the bold prompt, the bold prompt is nixed
+
 def prompt(string):
+  """Returns string formatted as prompt.
+  
+  Escape sequences used for colors, in combination with readline, break input()
+  Since tab completion is more useful than the bold prompt, the bold prompt is nixed.
+  Thus this funciton presently does nothing.
+  """
   # return colored(string, attrs=['bold'])
   return string
 
 def parse():
+  """Uses argparse to parse command line args."""
   parser = argparse.ArgumentParser()
   parser.add_argument('-d', 
                       '--documents', 
@@ -134,6 +153,7 @@ def parse():
   return args
 
 def make_acronym(string):
+  """Makes an acronym out of a string."""
   return "".join(word[0] for word in string.replace('-', ' ').split() if word[0].isupper())
 
 

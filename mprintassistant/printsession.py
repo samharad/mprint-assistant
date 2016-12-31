@@ -7,53 +7,70 @@ from getpass import getpass # Allows password entry
 from .document import Document
 from .utils import getSelection, prompt, color_by_status, parse, make_acronym
 import gnureadline
-from .completer import Completer, gnureadline_init
+from .completer import Completer 
 from builtins import input # So that Python 2 and 3 can both call input()
 
+"""Represents a printing session.
+
+A printing session is an authenticated session during which
+the user sends a set of documents to be printed.
+"""
+
 class PrintSession:
-  # A printSession has a completer
+  """Represents a printing session.
+
+  A printing session is an authenticated session during which
+  the user sends a set of documents to be printed.
+  """
+
   completer = Completer()
+  """For building and path tab completion."""
 
-  # A printSession has a requestsSession for communicating with API
   session = requests.Session()
+  """For communicating with API."""
 
-  # A print session has a buildings menu 
   buildings = None
-  # A print session has a floors menu (populated after building selection)
+  """json object: Buildings menu."""
   floors = None
-  # A print session has a queues menu (populated after floor selection)
+  """json object: Floors menu"""
   queues = None
+  """json object: Queues menu"""
 
-  # Building obj for user's desired building
   building = None
-  # Floor obj for user's desired floor; within building 
+  """json object: User's selected building"""
   floor = None
-  # Queue obj for user's desired floor
+  """json object: User's selected floor"""
   queue = None
+  """json object: User's selected queue"""
 
-  # Print session has list of Document objects
   documents = []
+  """List of Documents to be printed."""
 
-  # Dictionary; Print session has command line arguments:
-  # building 
-  # noscale
-  # documents ------- list
-  # copies ---------- list
-  # floorId
-  # one
-  # range ------------ list
-  # short
-  # landscape
   sysArgs = None
+  """dictionary: sys arguments.
+  documents (list)
+  buildingId
+  floorId
+  landscape
+  range (list)
+  copies (list)
+  one
+  short
+  noscale
+  quick
+  color
+  tabloid
+  """
 
   def __init__(self):
+    """Initializes a print session.
+    
+    Populates menus, parses and interprests sys args, authenticates user.
+    """
     self.populateMenus()
-    self.setSysArgs(vars(parse()))
+    self.sysArgs = vars(parse())
     self.interpretSysArgs()
     self.authenticate()
-
-  def setSysArgs(self, sysArgsIn):
-    self.sysArgs = sysArgsIn
 
   def interpretSysArgs(self):
     # Sets Document params based on sys args
@@ -91,6 +108,7 @@ class PrintSession:
           doc.params['range'] = self.sysArgs['range'][i]
         self.documents.append(doc)
 
+    # Populates building selection
     if self.sysArgs['buildingId']:
       try:
         self.building = list(filter(lambda dict: dict['id'] == self.sysArgs['buildingId'], self.buildings['result']))[0]
@@ -99,6 +117,7 @@ class PrintSession:
       except IndexError:
         sys.exit('Could not find specified building.')
 
+    # Populates floor selection
     if self.sysArgs['floorId']:
       try:
         self.floor = list(filter(lambda dict: dict['id'] == self.sysArgs['floorId'], self.floors['result']))[0]
@@ -112,7 +131,7 @@ class PrintSession:
   def authenticate(self):
     try:
       response = self.session.get(webloginBaseURL)
-      Completer.set_no_complete()
+      self.completer.deactivate()
       response = self.session.post(webloginBaseURL, 
                                    data={'login':input(prompt('Enter username: ')), 
                                    'password':getpass(prompt=prompt('Enter password: '))}, 
@@ -141,11 +160,11 @@ class PrintSession:
       self.floors = responseFloors.json()
     except KeyboardInterrupt:
       sys.exit()
-    # except:
     except requests.exceptions.RequestException:
       sys.exit('Problem calling mprint API. Check internet connection.') 
 
   def determineBuilding(self):
+    """Determines user's desired building."""
     possibleBuildings = []
     self.completer.set_vocab_list([x['name'] for x in self.buildings['result']])
     inputString = input(prompt('Enter building name: '))
@@ -158,6 +177,7 @@ class PrintSession:
     self.building = getSelection('Select building', possibleBuildings, 'name', 'id')
 
   def determineFloor(self):
+    """Determines user's desired floor."""
     try:
       possibleFloors = self.session.get(userBaseURL + 'floors', 
                                         params={'buildingId':self.building['id']}).json()['result']
@@ -173,12 +193,11 @@ class PrintSession:
       sys.exit('Problem calling mprint API. Check internet connection.') 
 
   def determineQueue(self):
+    """Determines user's desired queue."""
     try:
       p = {'floor':self.floor['id']}
       if self.sysArgs['color']:
         p['color'] = ""
-      # if self.sysArgs['poster']:
-        # p['poster'] = ""
       if self.sysArgs['tabloid']:
         p['tabloid'] = ""
       possibleQueues = self.session.get(userBaseURL + 'queues', 
@@ -193,14 +212,12 @@ class PrintSession:
         self.floor = None
     except KeyboardInterrupt:
       sys.exit()
-    # except:
     except requests.exceptions.RequestException:
       sys.exit('Problem calling mprint API. Check internet connection.') 
 
   def determineDocs(self):
+    """Determines documents to be printed."""
     if not self.documents:
-      # gnureadline.set_completer(Completer().completer)
-      # gnureadline.parse_and_bind('tab: complete')
       self.completer.set_path_completion()
       doc_strings = input(prompt('Enter document paths separated by spaces: ')).split()
       for doc_string in doc_strings:
@@ -219,7 +236,6 @@ class PrintSession:
         print(os.path.basename(doc.filePath) + ": " + color_by_status(printStatus['status']))
     except KeyboardInterrupt:
       sys.exit()
-    # except:
     except requests.exceptions.RequestException:
       sys.exit('Problem calling mprint API. Check internet connection.') 
 
@@ -232,11 +248,12 @@ class PrintSession:
       print(doc) 
     self.completer.deactivate()
     if not self.sysArgs['quick']:
-      response = input(prompt("Press enter to continue; anything to quit ")) 
+      response = input(prompt("Enter nothing to continue, anything to quit: ")) 
       if response != "":
         sys.exit()
 
   def determineDestination(self):
+    """Determines building, floor, queue."""
     while not self.building or not self.floor or not self.queue:
       if not self.building:
         self.determineBuilding()

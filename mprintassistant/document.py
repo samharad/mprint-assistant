@@ -1,4 +1,8 @@
+"""For representing documents."""
+
 class Document:
+  """For representing documents."""
+
   VALID_EXTENSIONS = ('.ai', '.bmp', '.c', '.cpp', '.csv', '.doc', '.docx', 
                       '.eps', '.gif', '.h', '.ico', '.jp2', '.jpeg', '.jpg', 
                       '.m', '.odf', '.pdf', '.php', '.png', '.pps', '.ppsx', 
