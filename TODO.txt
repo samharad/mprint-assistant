@@ -1,0 +1,9 @@
+# TODO
+
+Think about:
+- Find nearby printers
+- Look for authentication in browser cookies
+- Alias "favorite" printers
+- Super quick flag that selects "primary" bank of printers from the queue menu
+- Better interactive display system, so not left with a terminal full of output
+
