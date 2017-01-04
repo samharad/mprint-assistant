@@ -132,9 +132,10 @@ class PrintSession:
     try:
       response = self.session.get(webloginBaseURL)
       self.completer.deactivate()
+      # webloginBaseURL is an HTTPS URL, and redirects are disallowed
       response = self.session.post(webloginBaseURL, 
                                    data={'login':input(prompt('Enter username: ')), 
-                                   'password':getpass(prompt=prompt('Enter password: '))}, 
+                                   'password':getpass(prompt('Enter password: '))}, 
                                    allow_redirects=False)
 
       # Redirect code means successful login
