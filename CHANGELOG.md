@@ -8,3 +8,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 ### Changed
+- Fixed a typo in PrintSession.authenticate, where a useless variable "prompt" was set
