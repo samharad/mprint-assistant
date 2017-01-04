@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 from .settings import webloginBaseURL, userBaseURL, guestBaseURL  # Base URLs
 import requests # Request library for interacting with API
 from getpass import getpass # Allows password entry
@@ -161,6 +160,8 @@ class PrintSession:
       self.floors = responseFloors.json()
     except KeyboardInterrupt:
       sys.exit()
+    except ValueError:
+        sys.exit('Problem parsing server\'s response.')
     except requests.exceptions.RequestException:
       sys.exit('Problem calling mprint API. Check internet connection.') 
 
@@ -189,7 +190,8 @@ class PrintSession:
         self.building = None
     except KeyboardInterrupt:
       sys.exit()
-    # except:
+    except ValueError:
+        sys.exit('Problem parsing server\'s response.')
     except requests.exceptions.RequestException:
       sys.exit('Problem calling mprint API. Check internet connection.') 
 
@@ -213,6 +215,8 @@ class PrintSession:
         self.floor = None
     except KeyboardInterrupt:
       sys.exit()
+    except ValueError:
+        sys.exit('Problem parsing server\'s response.')
     except requests.exceptions.RequestException:
       sys.exit('Problem calling mprint API. Check internet connection.') 
 
@@ -237,6 +241,8 @@ class PrintSession:
         print(os.path.basename(doc.filePath) + ": " + color_by_status(printStatus['status']))
     except KeyboardInterrupt:
       sys.exit()
+    except ValueError:
+        sys.exit('Problem parsing server\'s response.')
     except requests.exceptions.RequestException:
       sys.exit('Problem calling mprint API. Check internet connection.') 
 
