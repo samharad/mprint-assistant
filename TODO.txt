@@ -4,6 +4,7 @@ Think about:
 - Find nearby printers
 - Look for authentication in browser cookies
 - Alias "favorite" printers
-- Super quick flag that selects "primary" bank of printers from the queue menu
+- Super quick flag that selects "primary" bank of printers from the queue menu; would not work in East Hall basement...
 - Better interactive display system, so not left with a terminal full of output
+- Support regex, or at least wildcard
 
