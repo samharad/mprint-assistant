@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 ### Changed
+- Replaced confirmation with (Y/n) prompt
 - Fixed a typo in PrintSession.authenticate, where a useless variable "prompt" was set
 - Removed "import json", since the request module's built-in .json() function is used for parsing
 - Added catch block for ValueError, thrown when JSON cannot be parsed from server response

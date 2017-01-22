@@ -1,7 +1,6 @@
 # TODO
 
 Think about:
-- Replace confirmation with (y/N) prompt
 - Find nearby printers
 - Look for authentication in browser cookies
 - Alias "favorite" printers

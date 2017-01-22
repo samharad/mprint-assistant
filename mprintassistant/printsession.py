@@ -255,8 +255,8 @@ class PrintSession:
       print(doc) 
     self.completer.deactivate()
     if not self.sysArgs['quick']:
-      response = input(prompt("Enter nothing to continue, anything to quit: ")) 
-      if response != "":
+      response = input(prompt("Ready to print? [Y/n]: ")) 
+      if response.strip().lower() != "y" and response.strip().lower() != "yes" and response.strip() != "":
         sys.exit()
 
   def determineDestination(self):
